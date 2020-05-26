@@ -1,23 +1,23 @@
 import tweepy
 from tweepy import OAuthHandler 
 
-def clearcomment(s): #just for comments
+def clearcomment(s): # takes out comment and excess chars
     s = s.split('#')[0]
     while(s[len(s)-1] == ' ' or s[len(s)-1] == '\n'):
         s = s[:-1]
     return s
 
-def wasIHere(api, tweet):
+def wasIHere(api, tweet): # checks own tweet for tweets that replyt to this tweet
     l = 0
     for status in tweepy.Cursor(api.user_timeline, q="to:{}".format(tweet.user.name)).items():
         l = l + 1
-        if hasattr(status, 'in_reply_to_status_id_str'):
-              if (tweet.in_reply_to_status_id_str == tweet.id):
+        if hasattr(status, 'in_reply_to_status_id'):
+              if (status.in_reply_to_status_id == tweet.id):
                 return False
-    print(l)
+    print("This one went through!")
     return True
 
-def findAndReply():
+def findAndReply(cachedName): # find, reply to unseen tweets and get a list of links of new ones to be sent
     with open("twitter.token") as f:
         consumer_key = clearcomment(f.readline())
         consumer_secret = clearcomment(f.readline())
@@ -37,7 +37,7 @@ def findAndReply():
 
     print(len(pp))
 
-    userTweets = api.user_timeline(screen_name = 'SwitchMeDaddy1', count = 100, include_rts = True)
+    userTweets = api.user_timeline(screen_name = cachedName, count = 100, include_rts = True)
 
     userNintendoTweets = []
 
@@ -47,10 +47,17 @@ def findAndReply():
 
     userTweets = userNintendoTweets 
 
-    print(len(userTweets))
+    imageUrls = []
 
     for tweet in userTweets:
+        if 'media' in tweet.extended_entities:
+            for image in tweet.extended_entities['media']:
+                imageUrls.append(image['media_url'])
         api.update_status('@{} I got you! I\'ve sent your picture to your discord!'.format(tweet.user.screen_name), tweet.id)
+    print("{} entries:\n{}".format(len(imageUrls), imageUrls))
+
+    return imageUrls 
+    
 
 if __name__ == "__main__":
-	findAndReply()
+    findAndReply('SwitchMeDaddy1')
