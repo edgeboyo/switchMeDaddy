@@ -1,0 +1,5 @@
+.*
+!.gitignore
+*.token
+!*.token.sample
+__pycache__
