@@ -3,3 +3,4 @@
 *.token
 !*.token.sample
 __pycache__
+*.jpg
